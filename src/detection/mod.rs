@@ -1,1 +1,1 @@
-mod rules;
+pub(crate) mod rules;

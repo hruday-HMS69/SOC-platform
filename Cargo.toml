@@ -1,7 +1,7 @@
 [package]
 name = "SOC-platform"
 version = "0.1.0"
-edition = "2024"
+edition = "2021"
 
 [dependencies]
 axum = "0.7"
@@ -30,3 +30,5 @@ thiserror = "1"
 anyhow = "1"
 
 tower-http = { version = "0.5", features = ["trace", "cors"] }
+argon2 = "0.5"
+jsonwebtoken = "9"

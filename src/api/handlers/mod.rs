@@ -1,2 +1,4 @@
 pub mod alert;
-mod auth;
+pub(crate) mod auth;
+pub(crate) mod health;
+pub(crate) mod log;

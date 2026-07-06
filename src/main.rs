@@ -7,6 +7,7 @@ use std::sync::Arc;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 mod api;
+mod auth;
 mod config;
 mod db;
 mod detection;
@@ -45,9 +46,11 @@ async fn main() -> anyhow::Result<()> {
 
     let app = Router::new()
         .route("/health", get(api::handlers::health::health_check))
-        .route("/api/logs", post(api::handlers::logs::ingest_log))
-        .route("/api/logs", get(api::handlers::logs::list_logs))
-        .route("/api/alerts", get(api::handlers::alerts::list_alerts))
+        .route("/auth/register", post(api::handlers::auth::register))
+        .route("/auth/login", post(api::handlers::auth::login))
+        .route("/api/logs", post(api::handlers::log::ingest_log))
+        .route("/api/logs", get(api::handlers::log::list_logs))
+        .route("/api/alerts", get(api::handlers::alert::list_alerts))
         .with_state(state)
         .layer(tower_http::trace::TraceLayer::new_for_http());
 
