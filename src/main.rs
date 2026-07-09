@@ -15,6 +15,7 @@ mod models;
 
 pub struct AppState {
     pub db: sqlx::PgPool,
+    pub jwt_secret: String,
 }
 
 #[tokio::main]
@@ -42,7 +43,9 @@ async fn main() -> anyhow::Result<()> {
     tracing::info!("Running migrations...");
     sqlx::migrate!("./migrations").run(&pool).await?;
 
-    let state = Arc::new(AppState { db: pool });
+    let state = Arc::new(AppState {
+        db: pool,
+        jwt_secret: config.jwt_secret.clone(),});
 
     let app = Router::new()
         .route("/health", get(api::handlers::health::health_check))
