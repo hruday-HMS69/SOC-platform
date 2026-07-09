@@ -11,8 +11,8 @@ pub struct Config {
 impl Config {
     pub fn from_env() -> Result<Self> {
         Ok(Self {
-            database_url: std::env::var("__")
-                .expect("_db"),
+            database_url: std::env::var("DATABASE_URL")
+                .expect("DATABASE_URL must be set"),
             host: std::env::var("HOST")
                 .unwrap_or_else(|_| "0.0.0.0".to_string()),
             port: std::env::var("PORT")
