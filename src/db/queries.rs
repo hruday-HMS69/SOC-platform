@@ -6,6 +6,7 @@ use uuid::Uuid;
 use crate::models::{
     alert::{Alert, NewAlert},
     log_event::{IngestLogRequest, LogEvent},
+    user::User,
 };
 
 pub async fn insert_log_event(pool: &PgPool, req: &IngestLogRequest) -> Result<LogEvent> {
@@ -93,4 +94,55 @@ pub async fn list_alerts(pool: &PgPool, limit: i64) -> Result<Vec<Alert>> {
         .await?;
 
     Ok(alerts)
+}
+pub async fn find_user_by_username(
+    pool: &PgPool,
+    username: &str,
+) -> Result<Option<User>> {
+    let user = sqlx::query_as::<_, User>(
+        r#"
+        SELECT id, created_at, username, password_hash, role
+        FROM users
+        WHERE username = $1
+        "#,
+    )
+        .bind(username)
+        .fetch_optional(pool)
+        .await?;
+
+    Ok(user)
+}
+
+pub async fn insert_user(
+    pool: &PgPool,
+    username: &str,
+    password_hash: &str,
+) -> Result<User> {
+    let user = sqlx::query_as::<_, User>(
+        r#"
+        INSERT INTO users (
+            id,
+            created_at,
+            username,
+            password_hash,
+            role
+        )
+        VALUES (
+            $1,
+            $2,
+            $3,
+            $4,
+            'analyst'
+        )
+        RETURNING id, created_at, username, password_hash, role
+        "#,
+    )
+        .bind(Uuid::new_v4())
+        .bind(Utc::now())
+        .bind(username)
+        .bind(password_hash)
+        .fetch_one(pool)
+        .await?;
+
+    Ok(user)
 }
