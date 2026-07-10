@@ -44,3 +44,28 @@ pub fn verify_token(token: &str, secret: &str) -> Result<Claims> {
 
     Ok(token_data.claims)
 }
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const SECRET: &str = "test_secret_only";
+
+    #[test]
+    fn token_roundtrip_works() {
+        let token = create_token("u1", "alice", "analyst", SECRET).unwrap();
+        let claims = verify_token(&token, SECRET).unwrap();
+        assert_eq!(claims.username, "alice");
+        assert_eq!(claims.role, "analyst");
+    }
+
+    #[test]
+    fn wrong_secret_fails_verification() {
+        let token = create_token("u1", "alice", "analyst", SECRET).unwrap();
+        assert!(verify_token(&token, "wrong").is_err());
+    }
+
+    #[test]
+    fn garbage_token_fails() {
+        assert!(verify_token("not.a.token", SECRET).is_err());
+    }
+}

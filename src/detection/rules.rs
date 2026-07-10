@@ -67,3 +67,45 @@ pub async fn run_all_rules(pool: &PgPool, log: &LogEvent) -> Result<Vec<NewAlert
 
     Ok(alerts)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use chrono::Utc;
+    use uuid::Uuid;
+    use crate::models::log_event::LogEvent;
+
+    fn make_log(event_type: &str, source_ip: &str) -> LogEvent {
+        LogEvent {
+            id: Uuid::new_v4(),
+            created_at: Utc::now(),
+            source_ip: source_ip.to_string(),
+            event_type: event_type.to_string(),
+            username: None,
+            message: "test".to_string(),
+            severity: "medium".to_string(),
+            raw: None,
+        }
+    }
+
+    #[test]
+    fn critical_rule_fires_on_sql_injection() {
+        let log = make_log("sql_injection", "10.0.0.1");
+        let alert = check_critical_event_type(&log);
+        assert!(alert.is_some());
+        assert_eq!(alert.unwrap().severity, "critical");
+    }
+
+    #[test]
+    fn critical_rule_does_not_fire_on_normal_event() {
+        let log = make_log("failed_login", "10.0.0.1");
+        let alert = check_critical_event_type(&log);
+        assert!(alert.is_none());
+    }
+
+    #[test]
+    fn critical_rule_fires_on_rce_attempt() {
+        let log = make_log("rce_attempt", "10.0.0.1");
+        assert!(check_critical_event_type(&log).is_some());
+    }
+}
