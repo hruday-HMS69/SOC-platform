@@ -3,24 +3,24 @@ A small Rust backend that simulates the detection layer of a Security Operations
 
 ## What it does
 
-You send it a log event - a failed login, an SQL injection attempt, whatever - through a POST request. The event gets saved to Postgres, and immediately checked against two rules:
+You send it a log event, a failed login, an SQL injection attempt, whatever through a POST request. The event gets saved to Postgres, and immediately checked against two rules:
 
 - If it's a `failed_login` and the same source IP has failed 5+ times in the last 10 minutes, it raises a `high` severity "brute force" alert.
 - If the event type is one of `sql_injection`, `xss_attempt`, `rce_attempt`, `privilege_escalation`, or `malware_detected`, it raises a `critical` alert right away, no threshold needed.
 
-Any alerts that fire get saved alongside the log and are queryable through their own endpoint. There's also a basic auth layer on top - you can register a user, log in, and get a JWT back - though right now that token isn't actually required to hit any of the other endpoints (more on that in Future Improvements).
+Any alerts that fire get saved alongside the log and are queryable through their own endpoint. There's also a basic auth layer on top you can register a user, log in, and get a JWT back though right now that token isn't actually required to hit any of the other endpoints (more on that in Future Improvements).
 
 ## Why I built this
 
-Wanted to get more comfortable writing backend services in Rust, and didn't want to build another todo list or blog API to do it. I've always found the log → detection → alert pipeline that SOC tools use pretty interesting, so I picked a stripped-down version of that instead - something with actual logic to write (the brute-force rule needs a time-windowed DB query, for instance) rather than just CRUD. It also ended up being a decent portfolio piece since it's not the same project everyone else building a backend demo has.
+Wanted to get more comfortable writing backend services in Rust, and didn't want to build another todo list or blog API to do it. I've always found the log → detection → alert pipeline that SOC tools use pretty interesting, so I picked a stripped-down version of that instead - something with actual logic to write (the bruteforce rule needs a time windowed DB query, for instance) rather than just CRUD. It also ended up being a decent portfolio piece since it's not the same project everyone else building a backend demo has.
 
 ## Features
 
 - Log ingestion endpoint that accepts arbitrary event data (source IP, event type, message, severity, optional raw JSON payload)
-- Two detection rules run automatically on every ingested log: brute-force (time-windowed, per-IP) and critical-event-type matching
+- Two detection rules run automatically on every ingested log: bruteforce (time windowed, per-IP) and critical event type matching
 - Alerts are persisted separately from logs and queryable on their own
 - User registration/login with argon2 password hashing, JWT issued on login
-- Structured logging via `tracing` - every ingested log and triggered alert gets logged
+- Structured logging via `tracing`,every ingested log and triggered alert gets logged
 - DB migrations run automatically on startup, no manual migration step
 - Small test suite covering the detection rules and JWT logic (6 tests)
 
@@ -65,7 +65,7 @@ SOC-platform/
         └── alert.rs
 ```
 
-Handlers stay thin - they parse the request, call into `db` or `detection`, and shape the response. The rule logic in `detection/rules.rs` doesn't know anything about HTTP, which is what let me unit test it without spinning up a server or a database (for the rules that don't need one).
+Handlers stay thin,they parse the request, call into `db` or `detection`, and shape the response. The rule logic in `detection/rules.rs` doesn't know anything about HTTP, which is what let me unit test it without spinning up a server or a database (for the rules that don't need one).
 
 Request flow for log ingestion:
 
@@ -101,7 +101,7 @@ docker-compose up -d
 Create a `.env` file in the project root:
 ```
 DATABASE_URL=postgres://soc_user:project_demo@localhost:5432/soc_platform
-JWT_SECRET=replace_with_a_long_random_string
+JWT_SECRET= replace with a long random String
 HOST=0.0.0.0
 PORT=3000
 RUST_LOG=soc_platform=debug,tower_http=debug
